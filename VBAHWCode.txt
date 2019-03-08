@@ -24,41 +24,56 @@ For Each ws In Worksheets
     
     
     'Display unique ticker symbols
-    Dim i As Long, UniqueTickerRow As Long, TickerTotal As Double, BegRow As Long, EndRow As Long, YearlyChange As Double, PercentChange As Double
+    Dim i As Long, UniqueTickerRow As Long, TickerTotal As Double, BegRow As Long, EndRow As Long, YearlyChange As Double, PercentChange As Double, PreviousYear As Double, CurrentYear As Double
     
-    UniqueTickerRow = 1
-    TickerTotal = 0
-    
+    UniqueTickerRow = 2 'Sum Row
+    TickerTotal = 0 'Summarize Like Tickers
+    BegRow = 2 'Starting Row
     
     For i = 2 To LastRow
+    
         If ws.Range("A" & (i + 1)).Value <> ws.Range("A" & i).Value Then
-            
-            UniqueTickerRow = UniqueTickerRow + 1
-            BegRow = 2
             EndRow = i
-            
+            TickerTotal = TickerTotal + Range("G" & i).Value
             'Ticker name input
             ws.Range("I" & UniqueTickerRow).Value = ws.Range("A" & i).Value
-            TickerTotal = TickerTotal + ws.Range("G" & i).Value
             ws.Range("L" & UniqueTickerRow).Value = TickerTotal
             ws.Range("J" & UniqueTickerRow).Value = ws.Range("F" & EndRow).Value - ws.Range("C" & BegRow).Value
             YearlyChange = ws.Range("J" & UniqueTickerRow).Value
-        If YearlyChange > 0 Then
-            ws.Range("J" & UniqueTickerRow).Interior.ColorIndex = 4
-            ElseIf ws.Range("J" & UniqueTickerRow).Value < 0 Then
-            ws.Range("J" & UniqueTickerRow).Interior.ColorIndex = 3
+            PreviousYear = ws.Range("C" & BegRow).Value
+            CurrentYear = ws.Range("F" & EndRow).Value
+            
+                If PreviousYear = 0 And CurrentYear = 0 Then
+                ws.Range("K" & UniqueTickerRow).Value = 0
+                ElseIf PreviousYear = 0 Then
+                ws.Range("K" & UniqueTickerRow).Value = 1
+                ElseIf CurrentYear = 0 Then
+                ws.Range("K" & UniqueTickerRow).Value = -1
+                Else
+                ws.Range("K" & UniqueTickerRow).Value = YearlyChange / PreviousYear
+                End If
+                    
+                PercentChange = ws.Range("K" & UniqueTickerRow).Value
+                If YearlyChange > 0 Then
+                ws.Range("J" & UniqueTickerRow).Interior.ColorIndex = 4
+                ElseIf ws.Range("J" & UniqueTickerRow).Value < 0 Then
+                ws.Range("J" & UniqueTickerRow).Interior.ColorIndex = 3
+                Else
+                ws.Range("J" & UniqueTickerRow).Interior.ColorIndex = 0
+                End If
+            BegRow = EndRow + 1
+            UniqueTickerRow = UniqueTickerRow + 1
+            TickerTotal = 0
             Else
-            ws.Range("J" & UniqueTickerRow).Interior.ColorIndex = 0
+            TickerTotal = TickerTotal + ws.Range("G" & i).Value
+        
         End If
-            ws.Range("K" & UniqueTickerRow).Value = YearlyChange / ws.Range("C" & BegRow).Value
-            'PercentChange = ws.Range("K" & UniqueTickerRow).Value
-
-        End If
-        TickerTotal = 0
-        BegRow = EndRow + 1
+        
+        
     Next i
-    
-    Dim VolumeTotalTicker As String, VolumeTotal As Double, MinTotal As Double, MaxTotal As Double, j As Long, LastSummaryRow As Long, MinTicker As String, MaxTicker As String
+
+
+    Dim VolumeTotalTicker As String, VolumeTotal As Double, MinTotal As Double, MaxTotal As Double, j As Long, MinTicker As String, MaxTicker As String, LastSummaryRow As Long
     
     
     MinTotal = Range("K2").Value
@@ -68,8 +83,8 @@ For Each ws In Worksheets
     
     For j = 2 To LastSummaryRow
         If ws.Range("K" & (j + 1)).Value < MinTotal Then
-        MinTotal = ws.Range("K" & j).Value
-        MinTicker = ws.Range("I" & j).Value
+        MinTotal = ws.Range("K" & (j + 1)).Value
+        MinTicker = ws.Range("I" & (j + 1)).Value
         End If
         If ws.Range("K" & (j + 1)).Value > MaxTotal Then
         MaxTotal = ws.Range("K" & (j + 1)).Value
@@ -93,3 +108,4 @@ MsgBox ("MacroDone")
 
 
 End Sub
+
